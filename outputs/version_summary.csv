@@ -1,0 +1,5 @@
+version,scaler,resampling,train_rows,train_bankrupt_count,train_bankrupt_pct,val_rows,test_rows,feature_count,notes
+A,StandardScaler,none,4773,154,3.2265,1023,1023,94,"Logistic Regression, Linear SVM"
+B,RobustScaler,SMOTE,9238,4619,50.0,1023,1023,94,"XGBoost, Random Forest, LightGBM"
+C,StandardScaler,none,4773,154,3.2265,1023,1023,74,MLP/DL — corr pruning >0.95 (20 cols dropped)
+D,StandardScaler+PCA,none,4773,154,3.2265,1023,1023,50,MLP/TabNet — PCA 50 components (95.5% var)

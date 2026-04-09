@@ -1,0 +1,8 @@
+{
+  "original_features": 94,
+  "n_components_95pct": 50,
+  "explained_variance_pct": 95.463,
+  "corr_pruning_threshold": 0.95,
+  "version_C_kept_features": 74,
+  "version_C_dropped_features": 20
+}

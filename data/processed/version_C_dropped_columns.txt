@@ -1,0 +1,20 @@
+ROA(B) before interest and depreciation after tax
+Realized Sales Gross Margin
+Pre-tax net Interest Rate
+After-tax net Interest Rate
+Continuous interest rate (after tax)
+Net Value Per Share (A)
+Net Value Per Share (C)
+Per Share Net profit before tax (Yuan ¥)
+Regular Net Profit Growth Rate
+Total Asset Return Growth Rate Ratio
+Net worth/Assets
+Operating profit/Paid-in capital
+Net profit before tax/Paid-in capital
+Working capitcal Turnover Rate
+Cash Flow to Sales
+Current Liability to Liability
+Current Liability to Equity
+Net Income to Total Assets
+Gross Profit to Sales
+Liability to Equity

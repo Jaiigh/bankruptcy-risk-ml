@@ -1,0 +1,114 @@
+{
+  "shape": [
+    6819,
+    96
+  ],
+  "dtypes": {
+    "float64": 93,
+    "int64": 3
+  },
+  "missing_values": {},
+  "zero_variance_columns": [
+    "Net Income Flag"
+  ],
+  "class_balance": {
+    "total": 6819,
+    "bankrupt_count": 220,
+    "solvent_count": 6599,
+    "bankrupt_pct": 3.2263
+  },
+  "top10_most_skewed": [
+    {
+      "column": "Fixed Assets to Assets",
+      "skewness": 82.577237
+    },
+    {
+      "column": "Current Ratio",
+      "skewness": 82.577237
+    },
+    {
+      "column": "Total income/Total expense",
+      "skewness": 82.332424
+    },
+    {
+      "column": "Net Value Growth Rate",
+      "skewness": 80.291844
+    },
+    {
+      "column": "Contingent liabilities/Net worth",
+      "skewness": 79.67062
+    },
+    {
+      "column": "Realized Sales Gross Profit Growth Rate",
+      "skewness": 77.925109
+    },
+    {
+      "column": "Operating Profit Growth Rate",
+      "skewness": -71.68895
+    },
+    {
+      "column": "Operating Profit Rate",
+      "skewness": -70.237164
+    },
+    {
+      "column": "Continuous Net Profit Growth Rate",
+      "skewness": 67.097534
+    },
+    {
+      "column": "Total Asset Return Growth Rate Ratio",
+      "skewness": 62.499961
+    }
+  ],
+  "top10_most_correlated_pairs": [
+    {
+      "col_a": "Current Liabilities/Liability",
+      "col_b": "Current Liability to Liability",
+      "correlation": 1.0
+    },
+    {
+      "col_a": "Current Liabilities/Equity",
+      "col_b": "Current Liability to Equity",
+      "correlation": 1.0
+    },
+    {
+      "col_a": "Debt ratio %",
+      "col_b": "Net worth/Assets",
+      "correlation": -1.0
+    },
+    {
+      "col_a": "Operating Gross Margin",
+      "col_b": "Gross Profit to Sales",
+      "correlation": 1.0
+    },
+    {
+      "col_a": "Net Value Per Share (A)",
+      "col_b": "Net Value Per Share (C)",
+      "correlation": 0.999837
+    },
+    {
+      "col_a": "Operating Gross Margin",
+      "col_b": "Realized Sales Gross Margin",
+      "correlation": 0.999518
+    },
+    {
+      "col_a": "Realized Sales Gross Margin",
+      "col_b": "Gross Profit to Sales",
+      "correlation": 0.999518
+    },
+    {
+      "col_a": "Net Value Per Share (B)",
+      "col_b": "Net Value Per Share (A)",
+      "correlation": 0.999342
+    },
+    {
+      "col_a": "Net Value Per Share (B)",
+      "col_b": "Net Value Per Share (C)",
+      "correlation": 0.999179
+    },
+    {
+      "col_a": "Operating Profit Per Share (Yuan \u00a5)",
+      "col_b": "Operating profit/Paid-in capital",
+      "correlation": 0.998696
+    }
+  ]
+}
