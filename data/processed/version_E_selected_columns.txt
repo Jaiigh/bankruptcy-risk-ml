@@ -1,0 +1,16 @@
+Operating Expense Rate
+Research and development expense rate
+Interest-bearing debt interest rate
+Tax rate (A)
+Total Asset Growth Rate
+Fixed Assets Turnover Frequency
+Quick Assets/Total Assets
+Current Assets/Total Assets
+Cash/Total Assets
+Current Liabilities/Liability
+Current Asset Turnover Rate
+Quick Asset Turnover Rate
+Fixed Assets to Assets
+feat_asset_quality
+feat_quick_to_current
+feat_financial_volatility

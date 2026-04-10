@@ -1,4 +1,7 @@
 # Cleaning Summary
+**Dataset:** `data/raw/data.csv` | **random_state:** 42 | **Date:** 2026-04-10
+
+---
 
 ## 1. Dataset Overview
 
@@ -6,141 +9,151 @@
 |---|---|
 | Raw shape | 6,819 rows × 96 columns |
 | Feature dtypes | 93 float64, 3 int64 |
-| Missing values | **None** (0 nulls across all columns) |
+| Missing values | **None** |
 | Target column | `Bankrupt?` |
-| Bankrupt count | 220 (3.23%) |
-| Solvent count | 6,599 (96.77%) |
-
-The dataset is heavily imbalanced: only 1 in ~31 companies is bankrupt. This drives all resampling decisions downstream.
+| Bankrupt (1) | 220 rows (3.23%) |
+| Solvent (0) | 6,599 rows (96.77%) |
 
 ---
 
-## 2. Column Cleaning Decisions
+## 2. Column Cleaning
 
-### 2a. Leading-space stripping
-All 96 column names in `data/raw/data.csv` carry a **leading space** (e.g., `" Bankrupt?"` → `"Bankrupt?"`). Every column name was stripped with `df.columns.str.strip()` as the very first operation before any analysis or splitting.
-
-### 2b. Zero-variance column dropped
-| Column | Reason |
+| Decision | Detail |
 |---|---|
-| `Net Income Flag` | `nunique() == 1` — constant across all 6,819 rows; carries zero information and would cause divide-by-zero in scalers |
+| Strip column spaces | All 96 names had a leading space (e.g., `" Bankrupt?"`) — stripped with `str.strip()` as first operation |
+| Drop zero-variance | `Net Income Flag` — constant across all rows; carries no information and causes divide-by-zero in scalers |
+| Flag binary columns | `Liability-Assets Flag` — 2 unique values; saved to `data/processed/binary_columns.txt`; not scaled |
 
-After dropping: **6,819 rows × 95 columns** (94 features + 1 target).
-
-### 2c. Binary columns flagged
-One binary (flag-type) feature was identified:
-
-| Column | Unique values |
-|---|---|
-| `Liability-Assets Flag` | 2 |
-
-Saved to `data/processed/binary_columns.txt`. These columns may benefit from special treatment (no scaling needed; logistic regression can use them as-is).
+After cleaning: **6,819 rows × 95 columns** (94 features + 1 target).
 
 ---
 
 ## 3. Train / Val / Test Split
 
-**Rationale:** Stratified split is mandatory because the 3.23% minority class is so small that a random split would produce highly variable class proportions across folds.
-
-**Method:** Two-stage stratified split using `sklearn.model_selection.train_test_split` with `stratify=y, random_state=42`.
+**Method:** Two-stage stratified split, `random_state=42`.
 
 | Split | Rows | Bankrupt | Solvent | Bankrupt % |
 |---|---|---|---|---|
 | Train | 4,773 | 154 | 4,619 | 3.23% |
 | Val | 1,023 | 33 | 990 | 3.23% |
 | Test | 1,023 | 33 | 990 | 3.23% |
-| **Total** | **6,819** | **220** | **6,599** | **3.23%** |
 
-Stratification is confirmed exact — all three splits maintain the same 3.23% minority rate.
-
-**Raw cleaned CSVs saved to:**
-- `data/processed/train.csv`
-- `data/processed/val.csv`
-- `data/processed/test.csv`
+Stratification confirmed exact across all three splits.
+Raw unscaled splits saved to `data/processed/train.csv / val.csv / test.csv`.
 
 ---
 
-## 4. Pipeline Versions
+## 4. Pipeline Versions (A–E)
 
-All scalers are **fit on train only** and applied to val/test — no leakage. SMOTE is applied **after scaling**, **on train only** — val and test are never resampled.
+All scalers and transformers are **fit on train only**. Val and test are only transformed (never fit). SMOTE is only applied to train.
 
-| Version | Scaler | Resampling | Train rows | Train bankrupt % | Val rows | Test rows |
+| Version | Scaler | Extra | Train rows | Bankrupt % | Features | Source |
 |---|---|---|---|---|---|---|
-| A | StandardScaler | None | 4,773 | 3.23% | 1,023 | 1,023 |
-| B | StandardScaler | SMOTE (k=5) | 9,238 | 50.00% | 1,023 | 1,023 |
-| C | RobustScaler | None | 4,773 | 3.23% | 1,023 | 1,023 |
-| D | RobustScaler | SMOTE (k=5) | 9,238 | 50.00% | 1,023 | 1,023 |
+| A | StandardScaler | — | 4,773 | 3.23% | 94 | Our pipeline |
+| B | RobustScaler | SMOTE | 9,238 | 50.00% | 94 | Our pipeline |
+| C | StandardScaler | Corr pruning >0.95 | 4,773 | 3.23% | 74 | Our pipeline |
+| D | StandardScaler | PCA 95% variance | 4,773 | 3.23% | 50 PCs | Our pipeline |
+| E | StandardScaler | Feature engineering + selection | 4,773 | 3.23% | 16 | Friend's v2, reproduced on our split |
 
-SMOTE synthetically generates minority-class samples until train reaches 50/50 balance (154 → 4,619 bankrupt samples added; total train 4,773 → 9,238).
+### Version A — StandardScaler, no resampling
+- 94 original features, zero-mean unit-variance
+- Natural 3.23% imbalance kept — handle with `class_weight='balanced'` at training time
+- **For:** Logistic Regression, Linear SVM
 
-**Version CSVs saved to `outputs/`** (e.g. `version_A_train.csv`, `version_A_val.csv`, etc.)
-**Summary table:** `outputs/version_summary.csv`
+### Version B — RobustScaler + SMOTE
+- RobustScaler (median/IQR) reduces influence of extreme outliers (max skewness ~82)
+- SMOTE (k=5) applied only to train → 4,773 → 9,238 rows, 50/50 balanced
+- Val and test NOT resampled — they keep the natural distribution for realistic evaluation
+- **For:** XGBoost, Random Forest, LightGBM
+
+### Version C — StandardScaler + Correlation Pruning
+- Dropped 20 features with pairwise |r| > 0.95 (computed on train only)
+- 94 → 74 features; dropped column list: `data/processed/version_C_dropped_columns.txt`
+- **For:** MLP — removes redundant inputs that slow convergence
+
+### Version D — StandardScaler + PCA
+- PCA fit on train, retaining 95.46% variance in 50 components
+- Column names: `PC1` … `PC50`; metadata: `outputs/pca_info.json`
+- Removes multicollinearity completely
+- **For:** MLP, TabNet
+
+### Version E — Feature Engineering + Aggressive Selection (Friend's v2)
+Pipeline applied on **our split** (same rows as A–D):
+1. **Feature engineering** — 12 new features added (growth, ratios, interactions):
+   - Growth: `feat_roa_momentum`, `feat_leverage_growth`, `feat_liquidity_trend`
+   - Ratios: `feat_debt_service_ratio`, `feat_prof_to_debt`, `feat_asset_quality`, `feat_quick_to_current`, `feat_cfo_to_operating`
+   - Interactions: `feat_profit_x_leverage`, `feat_liquidity_x_debt`, `feat_cashflow_x_liability`, `feat_financial_volatility`
+2. **Imputation** — median (fit on train; no nulls in raw data but inf/NaN can appear from divisions)
+3. **Outlier clipping** — 1st/99th percentile (fit on train)
+4. **Correlation pruning** — drop |r| > 0.95 → 81 features
+5. **Low variance filter** — drop var < 0.01 → 20 features
+6. **Target correlation filter** — keep |corr with Bankrupt?| > 0.01 → **16 features**
+7. **StandardScaler** (fit on train)
+- Selected features saved to `data/processed/version_E_selected_columns.txt`
+- **For:** Logistic Regression, interpretable/explainable ML where feature count matters
+
+Top features by target correlation:
+| Feature | |r with target| |
+|---|---|
+| `feat_financial_volatility` | 0.3145 |
+| `feat_asset_quality` | 0.1396 |
+| `Tax rate (A)` | 0.1179 |
+| `Cash/Total Assets` | 0.1007 |
+| `feat_quick_to_current` | 0.0874 |
 
 ---
 
-## 5. Recommended Version per Model
+## 5. Top-10 Most Skewed Features (raw)
 
-| Model | Recommended Version | Reason |
-|---|---|---|
-| Logistic Regression | A | Assumes normally-distributed features; handle imbalance via `class_weight='balanced'` rather than synthetic data |
-| Linear SVM | A or C | Linear SVMs are robust to scale but sensitive to outliers; use C if many outliers are present |
-| RBF-SVM / KNN | C | Distance-based models need RobustScaler to reduce outlier distortion; no SMOTE needed with `class_weight` |
-| RBF-SVM / KNN (max recall) | D | Same as C but SMOTE-balanced training maximises minority-class recall at the cost of more false positives |
-| Random Forest / XGBoost | A or B | Tree models are scale-invariant but benefit from explicit resampling when minority class < 5%; B gives balanced signal |
-| LightGBM / CatBoost | A | Native `scale_pos_weight` parameter handles imbalance; synthetic data not needed |
-| MLP / Neural Network | B | Neural nets train more stably on balanced batches; StandardScaler suits gradient-based optimisation |
+Max skewness ~82 confirms extreme outliers in financial ratios — justifies RobustScaler for Version B and outlier clipping in Version E.
 
----
-
-## 6. Top-10 Most Skewed Features
-
-Extreme skewness (>60) confirms that raw features have long tails — supporting the use of RobustScaler for outlier-sensitive models.
-
-| Rank | Feature | Skewness |
-|---|---|---|
-| 1 | Fixed Assets to Assets | 82.58 |
-| 2 | Current Ratio | 82.58 |
-| 3 | Total income/Total expense | 82.33 |
-| 4 | Net Value Growth Rate | 80.29 |
-| 5 | Contingent liabilities/Net worth | 79.67 |
-| 6 | Realized Sales Gross Profit Growth Rate | 77.93 |
-| 7 | Operating Profit Growth Rate | −71.69 |
-| 8 | Operating Profit Rate | −70.24 |
-| 9 | Continuous Net Profit Growth Rate | 67.10 |
-| 10 | Total Asset Return Growth Rate Ratio | 62.50 |
+| Feature | Skewness |
+|---|---|
+| Fixed Assets to Assets | 82.58 |
+| Current Ratio | 82.58 |
+| Total income/Total expense | 82.33 |
+| Net Value Growth Rate | 80.29 |
+| Contingent liabilities/Net worth | 79.67 |
 
 ---
 
-## 7. Top-10 Most Correlated Feature Pairs
+## 6. Top Correlated Pairs (raw)
 
-Several feature pairs are **perfectly correlated (|r| = 1.0)**, indicating redundant columns. Feature selection / dimensionality reduction (PCA, VIF pruning) is recommended in the modelling phase.
+Multiple perfectly correlated pairs (|r|=1.0) confirmed — justifies the >0.95 pruning in versions C and E.
 
-| Col A | Col B | Correlation |
+| Col A | Col B | r |
 |---|---|---|
 | Current Liabilities/Liability | Current Liability to Liability | 1.000 |
-| Current Liabilities/Equity | Current Liability to Equity | 1.000 |
 | Debt ratio % | Net worth/Assets | −1.000 |
 | Operating Gross Margin | Gross Profit to Sales | 1.000 |
-| Net Value Per Share (A) | Net Value Per Share (C) | 0.9998 |
-| Operating Gross Margin | Realized Sales Gross Margin | 0.9995 |
-| Realized Sales Gross Margin | Gross Profit to Sales | 0.9995 |
-| Net Value Per Share (B) | Net Value Per Share (A) | 0.9993 |
-| Net Value Per Share (B) | Net Value Per Share (C) | 0.9992 |
-| Operating Profit Per Share (Yuan ¥) | Operating profit/Paid-in capital | 0.9987 |
+
+---
+
+## 7. Combining Our Pipeline and Friend's Pipeline
+
+| Aspect | Our pipeline (A–D) | Friend's pipeline (v2 → E) |
+|---|---|---|
+| Split method | 70% train, then 30% temp → 50/50 val/test | 85% trainval → 15% test, then ~82/18 train/val |
+| Split rows | Same final counts (4773/1023/1023) | Same final counts but **different row assignments** |
+| Feature engineering | None (raw financial ratios) | 12 engineered features added |
+| Outlier handling | RobustScaler (Version B) | 1-99% clipping before any step |
+| Dimensionality reduction | Corr pruning (C) or PCA (D) | Corr + low-var + target-corr selection |
+| Final features | 94 / 74 / 50 | **16** |
+
+**Resolution:** Version E was reproduced by re-running the friend's pipeline steps on **our** split, so all five versions share identical row assignments. This is required for fair model comparison.
 
 ---
 
 ## 8. What Was NOT Done (and Why)
 
-| What | Why not done |
+| What | Why |
 |---|---|
-| Imputation | No missing values — not needed |
-| Outlier removal | Retained to let models handle naturally; RobustScaler mitigates impact |
-| Feature selection / VIF pruning | Deferred to modelling phase — kept all 94 features to give each model full signal |
-| Log/power transformation | Deferred; tree models don't need it and linear models use StandardScaler |
-| Class-weight tuning | Model hyperparameter — set per-model during training, not in preprocessing |
-| Data leakage guard | **Enforced**: all scalers/SMOTE fit on train only; val and test never seen during fitting |
+| Imputation | No missing values in raw data |
+| Log/power transform | Deferred to modelling; tree models don't need it; DL uses PCA instead |
+| SMOTE on val/test | Would corrupt evaluation — natural imbalance preserved |
+| Leakage | Enforced: all fitting done on train only |
+| Feature selection for A/B | Kept all 94 to give each model full signal |
 
 ---
 
-*Generated: 2026-04-10 | random_state=42 throughout*
+*random_state=42 throughout all steps.*

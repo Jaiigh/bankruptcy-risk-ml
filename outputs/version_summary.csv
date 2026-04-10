@@ -3,3 +3,4 @@ A,StandardScaler,none,4773,154,3.2265,1023,1023,94,"Logistic Regression, Linear 
 B,RobustScaler,SMOTE,9238,4619,50.0,1023,1023,94,"XGBoost, Random Forest, LightGBM"
 C,StandardScaler,none,4773,154,3.2265,1023,1023,74,MLP/DL — corr pruning >0.95 (20 cols dropped)
 D,StandardScaler+PCA,none,4773,154,3.2265,1023,1023,50,MLP/TabNet — PCA 50 components (95.5% var)
+E,StandardScaler,none,4773,154,3.2265,1023,1023,16,Logistic Reg / Explainable ML — 16 engineered+selected features (friend's v2 reproduced on our split)
