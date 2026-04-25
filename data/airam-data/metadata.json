@@ -1,0 +1,22 @@
+{
+  "random_state": 42,
+  "target_col": "Bankrupt?",
+  "dropped_columns": [
+    "Liability-Assets Flag",
+    "Net Income Flag"
+  ],
+  "split": "80/20 then 80/20 \u2192 64/16/20 of original",
+  "train_size": 4364,
+  "val_size": 1091,
+  "test_size": 1364,
+  "n_features": 106,
+  "clipping": "5th/95th percentile applied to full dataset before split",
+  "processing": [
+    "drop_Liability-Assets-Flag",
+    "drop_Net-Income-Flag",
+    "feature_engineering",
+    "clip(5-95%)",
+    "split(64/16/20)"
+  ],
+  "note": "No scaler applied \u2014 scale at model training time (XGBoost is scale-invariant)"
+}

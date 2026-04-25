@@ -1,0 +1,11 @@
+Operating Expense Rate
+Research and development expense rate
+Tax rate (A)
+Quick Assets/Total Assets
+Current Assets/Total Assets
+Inventory/Current Liability
+Long-term Liability to Current Assets
+Current Asset Turnover Rate
+Quick Asset Turnover Rate
+Fixed Assets to Assets
+feat_quick_to_current

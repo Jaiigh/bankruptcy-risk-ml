@@ -4,7 +4,9 @@
       "Bash(mkdir -p /Users/chanonjay/Pojec/Y3T2/PattRecog/Final_Project/bankruptcy-risk-ml/outputs)",
       "Bash(mkdir -p /Users/chanonjay/Pojec/Y3T2/PattRecog/Final_Project/bankruptcy-risk-ml/data/processed)",
       "Bash(python:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(mkdir -p /Users/chanonjay/Pojec/Y3T2/PattRecog/Final_Project/bankruptcy-risk-ml/data/aimon-data)",
+      "Bash(mkdir -p /Users/chanonjay/Pojec/Y3T2/PattRecog/Final_Project/bankruptcy-risk-ml/data/airam-data)"
     ]
   }
 }

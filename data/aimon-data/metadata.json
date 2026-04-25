@@ -1,0 +1,39 @@
+{
+  "random_state": 42,
+  "target_col": "Bankrupt?",
+  "train_size": 4773,
+  "val_size": 1023,
+  "test_size": 1023,
+  "v1": {
+    "n_features": 94,
+    "processing": [
+      "impute(median)",
+      "StandardScaler"
+    ]
+  },
+  "v2": {
+    "n_features": 11,
+    "selected_features": [
+      "Operating Expense Rate",
+      "Research and development expense rate",
+      "Tax rate (A)",
+      "Quick Assets/Total Assets",
+      "Current Assets/Total Assets",
+      "Inventory/Current Liability",
+      "Long-term Liability to Current Assets",
+      "Current Asset Turnover Rate",
+      "Quick Asset Turnover Rate",
+      "Fixed Assets to Assets",
+      "feat_quick_to_current"
+    ],
+    "processing": [
+      "feature_engineering",
+      "impute(median)",
+      "clip(1-99%)",
+      "corr_pruning(>0.95)",
+      "low_var_filter(<0.01)",
+      "target_corr_selection(>0.01)",
+      "StandardScaler"
+    ]
+  }
+}
